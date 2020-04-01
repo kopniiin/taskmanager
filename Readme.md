@@ -1,7 +1,7 @@
 # Личный проект «Менеджер задач» [![Build status][travis-image]][travis-url]
 
 * Студент: [Ivan Kopnin](https://up.htmlacademy.ru/ecmascript/11/user/1132759).
-* Наставник: `Неизвестно`.
+* Наставник: [Дмитрий Русаков](https://htmlacademy.ru/profile/id6302).
 
 ---
 
