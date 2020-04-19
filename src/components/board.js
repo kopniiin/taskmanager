@@ -1,32 +1,25 @@
-export const createBoardTemplate = () => (
-  `<section class="board container">
+import {createElementFromTemplate} from "../utils";
 
-    <div class="board__filter-list">
+const createBoardTemplate = () => `<section class="board container"></section>`;
 
-      <a
-        href="#"
-        class="board__filter"
-        data-sort-type="default">
-        SORT BY DEFAULT
-      </a>
+export default class Board {
+  constructor() {
+    this._element = null;
+  }
 
-      <a
-        href="#"
-        class="board__filter"
-        data-sort-type="date-up">
-        SORT BY DATE up
-      </a>
+  getTemplate() {
+    return createBoardTemplate();
+  }
 
-      <a
-        href="#"
-        class="board__filter"
-        data-sort-type="date-down">
-        SORT BY DATE down
-      </a>
+  getElement() {
+    if (!this._element) {
+      this._element = createElementFromTemplate(this.getTemplate());
+    }
 
-    </div>
+    return this._element;
+  }
 
-    <div class="board__tasks"></div>
-
-  </section>`
-);
+  removeElement() {
+    this._element = null;
+  }
+}

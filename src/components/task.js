@@ -2,23 +2,19 @@ import {
   formatDate,
   formatTime,
   checkIfTaskExpired,
-  checkIfTaskRepeating
+  checkIfTaskRepeating,
+  createElementFromTemplate
 } from "../utils";
 
-export const createTaskTemplate = (task) => {
-  const {
-    description,
-    dueDate,
-    color,
-    isFavorite,
-    isArchive
-  } = task;
+const createTaskTemplate = (task) => {
+  const {description, dueDate, color, isFavorite, isArchive} = task;
 
   const isExpired = checkIfTaskExpired(task);
   const isRepeating = checkIfTaskRepeating(task);
 
   return (
-    `<article class="card card--${color} ${isRepeating ? `card--repeat` : ``} ${isExpired ? `card--deadline` : ``}">
+    `<article
+      class="card card--${color} ${isRepeating ? `card--repeat` : ``} ${isExpired ? `card--deadline` : ``}">
       <div class="card__form">
         <div class="card__inner">
 
@@ -68,3 +64,26 @@ export const createTaskTemplate = (task) => {
     </article>`
   );
 };
+
+export default class Task {
+  constructor(task) {
+    this._task = task;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createTaskTemplate(this._task);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElementFromTemplate(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

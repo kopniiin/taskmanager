@@ -1,4 +1,6 @@
-export const createMenuTemplate = () => (
+import {createElementFromTemplate} from "../utils";
+
+const createMenuTemplate = () => (
   `<section class="control__btn-wrap">
 
     <input
@@ -9,8 +11,7 @@ export const createMenuTemplate = () => (
 
     <label
       for="control__new-task"
-      class="control__label
-      control__label--new-task">
+      class="control__label control__label--new-task">
       + ADD NEW TASK
     </label>
 
@@ -41,3 +42,25 @@ export const createMenuTemplate = () => (
 
   </section>`
 );
+
+export default class Menu {
+  constructor() {
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createMenuTemplate();
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElementFromTemplate(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
