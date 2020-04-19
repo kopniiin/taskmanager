@@ -1,4 +1,4 @@
-import {FILTER_NAMES} from "../const";
+import {FILTERS} from "../const";
 
 import {
   checkIfTaskExpired,
@@ -9,7 +9,7 @@ import {
 const countTasks = (tasks) => {
   const counters = {};
 
-  FILTER_NAMES.forEach((name) => {
+  FILTERS.forEach((name) => {
     counters[name] = 0;
   });
 
@@ -35,13 +35,11 @@ const countTasks = (tasks) => {
   return counters;
 };
 
-const generateFilters = (tasks) => {
+export const generateFilters = (tasks) => {
   const taskCounters = countTasks(tasks);
 
-  return FILTER_NAMES.map((name) => ({
+  return FILTERS.map((name) => ({
     name,
     count: taskCounters[name]
   }));
 };
-
-export {generateFilters};

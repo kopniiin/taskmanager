@@ -1,4 +1,5 @@
 import {
+  TASK_TOTAL_AMOUNT,
   TASK_DESCRIPTIONS,
   TASK_MAX_DATE_OFFSET,
   TASK_DEFAULT_REPEATING_DAYS,
@@ -45,6 +46,4 @@ const generateTask = () => {
   };
 };
 
-const generateTasks = (amount) => new Array(amount).fill(``).map(generateTask);
-
-export {generateTasks};
+export const generateTasks = () => new Array(TASK_TOTAL_AMOUNT).fill(``).map(generateTask);
