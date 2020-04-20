@@ -1,61 +1,89 @@
 import {
+  RenderPosition,
   TASK_TOTAL_AMOUNT,
   TASK_START_AMOUNT,
   TASK_LOAD_AMOUNT
 } from "./const";
 
-import {createMenuTemplate} from "./components/menu";
-import {createFilterTemplate} from "./components/filter";
-import {createBoardTemplate} from "./components/board";
-import {createTaskTemplate} from "./components/task";
-import {createTaskEditorTemplate} from "./components/task-editor";
-import {createLoadButtonTemplate} from "./components/load-button";
+import {render} from "./utils";
 
-import {generateFilters} from "./mock/filter";
+import MenuComponent from "./components/menu";
+import FilterComponent from "./components/filter";
+import BoardComponent from "./components/board";
+import SortComponent from "./components/sort";
+import TaskListComponent from "./components/task-list";
+import TaskComponent from "./components/task";
+import EditorComponent from "./components/editor";
+import LoadButtonComponent from "./components/load-button";
+
 import {generateTasks} from "./mock/task";
+import {generateFilters} from "./mock/filter";
 
-const render = (container, template, position = `beforeend`) => {
-  container.insertAdjacentHTML(position, template);
-};
-
-const tasks = generateTasks(TASK_TOTAL_AMOUNT);
+const tasks = generateTasks();
 const filters = generateFilters(tasks);
 
 const mainElement = document.querySelector(`.main`);
 const headerElement = mainElement.querySelector(`.main__control`);
 
-render(headerElement, createMenuTemplate());
-render(mainElement, createFilterTemplate(filters));
-render(mainElement, createBoardTemplate());
+render(headerElement, new MenuComponent().getElement());
+render(mainElement, new FilterComponent(filters).getElement());
 
-const boardElement = mainElement.querySelector(`.board`);
-const taskListElement = boardElement.querySelector(`.board__tasks`);
+const renderTask = (taskListElement, task) => {
+  const taskElement = new TaskComponent(task).getElement();
+  const editorElement = new EditorComponent(task).getElement();
 
-render(taskListElement, createTaskEditorTemplate(tasks[0]));
+  const editButton = taskElement.querySelector(`.card__btn--edit`);
+  const editForm = editorElement.querySelector(`form`);
 
-render(boardElement, createLoadButtonTemplate());
+  const editButtonClickHandler = () => taskListElement.replaceChild(editorElement, taskElement);
+  const editFormSubmitHandler = (evt) => {
+    evt.preventDefault();
+    taskListElement.replaceChild(taskElement, editorElement);
+  };
 
-const loadButton = boardElement.querySelector(`.load-more`);
+  editButton.addEventListener(`click`, editButtonClickHandler);
+  editForm.addEventListener(`submit`, editFormSubmitHandler);
 
-let currentTaskAmount = TASK_START_AMOUNT;
-
-const loadTasks = () => {
-  const previousTaskAmount = currentTaskAmount;
-  currentTaskAmount += TASK_LOAD_AMOUNT;
-
-  tasks.slice(previousTaskAmount, currentTaskAmount)
-    .forEach((task) => render(taskListElement, createTaskTemplate(task)));
+  render(taskListElement, taskElement, RenderPosition.BEFOREEND);
 };
 
-const loadButtonClickHandler = () => {
-  loadTasks();
+const renderBoard = () => {
+  const boardElement = new BoardComponent().getElement();
+  const taskListElement = new TaskListComponent().getElement();
+
+  render(boardElement, new SortComponent().getElement());
+  render(boardElement, taskListElement);
+
+  let currentTaskAmount = TASK_START_AMOUNT;
+  tasks.slice(0, currentTaskAmount).forEach((task) => renderTask(taskListElement, task));
+
+  render(mainElement, boardElement);
 
   if (currentTaskAmount >= TASK_TOTAL_AMOUNT) {
-    loadButton.remove();
+    return;
   }
+
+  const loadButtonComponent = new LoadButtonComponent();
+  const loadButtonElement = loadButtonComponent.getElement();
+
+  const loadTasks = () => {
+    const previousTaskAmount = currentTaskAmount;
+    currentTaskAmount += TASK_LOAD_AMOUNT;
+
+    tasks.slice(previousTaskAmount, currentTaskAmount).forEach((task) => renderTask(taskListElement, task));
+  };
+
+  const loadButtonClickHandler = () => {
+    loadTasks();
+
+    if (currentTaskAmount >= TASK_TOTAL_AMOUNT) {
+      loadButtonElement.remove();
+      loadButtonComponent.removeElement();
+    }
+  };
+
+  loadButtonElement.addEventListener(`click`, loadButtonClickHandler);
+  render(boardElement, loadButtonElement);
 };
 
-loadButton.addEventListener(`click`, loadButtonClickHandler);
-
-tasks.slice(1, currentTaskAmount)
-  .forEach((task) => render(taskListElement, createTaskTemplate(task)));
+renderBoard();

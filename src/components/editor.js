@@ -9,7 +9,8 @@ import {
   formatDate,
   formatTime,
   checkIfTaskExpired,
-  checkIfTaskRepeating
+  checkIfTaskRepeating,
+  createElementFromTemplate
 } from "../utils";
 
 const createColorMarkup = (color, isChecked) => (
@@ -74,7 +75,7 @@ const createDeadlineMarkup = (deadline) => (
   </fieldset>`
 );
 
-export const createTaskEditorTemplate = (task) => {
+const createEditorTemplate = (task) => {
   const {
     description,
     dueDate,
@@ -140,3 +141,26 @@ export const createTaskEditorTemplate = (task) => {
     </article>`
   );
 };
+
+export default class Editor {
+  constructor(task) {
+    this._task = task;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createEditorTemplate(this._task);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElementFromTemplate(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
