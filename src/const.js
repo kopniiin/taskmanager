@@ -20,6 +20,8 @@ export const RenderPosition = {
   BEFOREEND: `beforeend`
 };
 
+export const ESC_KEY = `Escape`;
+
 export const FILTERS = [`all`, `overdue`, `today`, `favorites`, `repeating`, `archive`];
 
 export const DEFAULT_FILTER = `all`;

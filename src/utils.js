@@ -1,4 +1,4 @@
-import {MONTHS, RenderPosition} from "./const";
+import {MONTHS, RenderPosition, ESC_KEY} from "./const";
 
 export const getRandomBoolean = () => Math.random() > 0.5;
 
@@ -48,3 +48,5 @@ export const render = (container, element, position = RenderPosition.BEFOREEND) 
       break;
   }
 };
+
+export const checkEscKey = (key) => key === ESC_KEY;

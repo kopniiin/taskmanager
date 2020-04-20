@@ -5,7 +5,7 @@ import {
   TASK_LOAD_AMOUNT
 } from "./const";
 
-import {render} from "./utils";
+import {render, checkEscKey} from "./utils";
 
 import MenuComponent from "./components/menu";
 import FilterComponent from "./components/filter";
@@ -35,10 +35,23 @@ const renderTask = (taskListElement, task) => {
   const editButton = taskElement.querySelector(`.card__btn--edit`);
   const editForm = editorElement.querySelector(`form`);
 
-  const editButtonClickHandler = () => taskListElement.replaceChild(editorElement, taskElement);
+  const editFormKeydownHandler = (evt) => {
+    if (checkEscKey(evt.key)) {
+      evt.preventDefault();
+      editorElement.replaceWith(taskElement);
+      document.removeEventListener(`keydown`, editFormKeydownHandler);
+    }
+  };
+
+  const editButtonClickHandler = () => {
+    taskElement.replaceWith(editorElement);
+    document.addEventListener(`keydown`, editFormKeydownHandler);
+  };
+
   const editFormSubmitHandler = (evt) => {
     evt.preventDefault();
-    taskListElement.replaceChild(taskElement, editorElement);
+    editorElement.replaceWith(taskElement);
+    document.removeEventListener(`keydown`, editFormKeydownHandler);
   };
 
   editButton.addEventListener(`click`, editButtonClickHandler);
