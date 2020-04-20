@@ -5,11 +5,16 @@ import {
   TASK_LOAD_AMOUNT
 } from "./const";
 
-import {render, checkEscKey} from "./utils";
+import {
+  checkIfAllTasksArchived,
+  render,
+  checkEscKey
+} from "./utils";
 
 import MenuComponent from "./components/menu";
 import FilterComponent from "./components/filter";
 import BoardComponent from "./components/board";
+import NoTasksMessageComponent from "./components/no-tasks-message";
 import SortComponent from "./components/sort";
 import TaskListComponent from "./components/task-list";
 import TaskComponent from "./components/task";
@@ -62,6 +67,13 @@ const renderTask = (taskListElement, task) => {
 
 const renderBoard = () => {
   const boardElement = new BoardComponent().getElement();
+  render(mainElement, boardElement);
+
+  if (checkIfAllTasksArchived(tasks)) {
+    render(boardElement, new NoTasksMessageComponent().getElement());
+    return;
+  }
+
   const taskListElement = new TaskListComponent().getElement();
 
   render(boardElement, new SortComponent().getElement());
@@ -69,8 +81,6 @@ const renderBoard = () => {
 
   let currentTaskAmount = TASK_START_AMOUNT;
   tasks.slice(0, currentTaskAmount).forEach((task) => renderTask(taskListElement, task));
-
-  render(mainElement, boardElement);
 
   if (currentTaskAmount >= TASK_TOTAL_AMOUNT) {
     return;

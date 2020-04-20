@@ -31,6 +31,8 @@ export const checkIfTaskExpiresToday = (task) => {
 
 export const checkIfTaskRepeating = (task) => Object.values(task.repeatingDays).some(Boolean);
 
+export const checkIfAllTasksArchived = (tasks) => tasks.every((task) => task.isArchive);
+
 export const createElementFromTemplate = (template) => {
   const element = document.createElement(`div`);
   element.innerHTML = template;
