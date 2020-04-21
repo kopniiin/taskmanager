@@ -1,4 +1,4 @@
-import {MONTHS, RenderPosition} from "./const";
+import {MONTHS, RenderPosition, ESC_KEY} from "./const";
 
 export const getRandomBoolean = () => Math.random() > 0.5;
 
@@ -31,6 +31,8 @@ export const checkIfTaskExpiresToday = (task) => {
 
 export const checkIfTaskRepeating = (task) => Object.values(task.repeatingDays).some(Boolean);
 
+export const checkIfAllTasksArchived = (tasks) => tasks.every((task) => task.isArchive);
+
 export const createElementFromTemplate = (template) => {
   const element = document.createElement(`div`);
   element.innerHTML = template;
@@ -48,3 +50,5 @@ export const render = (container, element, position = RenderPosition.BEFOREEND) 
       break;
   }
 };
+
+export const checkEscKey = (key) => key === ESC_KEY;

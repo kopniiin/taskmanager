@@ -5,11 +5,16 @@ import {
   TASK_LOAD_AMOUNT
 } from "./const";
 
-import {render} from "./utils";
+import {
+  checkIfAllTasksArchived,
+  render,
+  checkEscKey
+} from "./utils";
 
 import MenuComponent from "./components/menu";
 import FilterComponent from "./components/filter";
 import BoardComponent from "./components/board";
+import NoTasksMessageComponent from "./components/no-tasks-message";
 import SortComponent from "./components/sort";
 import TaskListComponent from "./components/task-list";
 import TaskComponent from "./components/task";
@@ -35,10 +40,23 @@ const renderTask = (taskListElement, task) => {
   const editButton = taskElement.querySelector(`.card__btn--edit`);
   const editForm = editorElement.querySelector(`form`);
 
-  const editButtonClickHandler = () => taskListElement.replaceChild(editorElement, taskElement);
+  const editFormKeydownHandler = (evt) => {
+    if (checkEscKey(evt.key)) {
+      evt.preventDefault();
+      editorElement.replaceWith(taskElement);
+      document.removeEventListener(`keydown`, editFormKeydownHandler);
+    }
+  };
+
+  const editButtonClickHandler = () => {
+    taskElement.replaceWith(editorElement);
+    document.addEventListener(`keydown`, editFormKeydownHandler);
+  };
+
   const editFormSubmitHandler = (evt) => {
     evt.preventDefault();
-    taskListElement.replaceChild(taskElement, editorElement);
+    editorElement.replaceWith(taskElement);
+    document.removeEventListener(`keydown`, editFormKeydownHandler);
   };
 
   editButton.addEventListener(`click`, editButtonClickHandler);
@@ -49,6 +67,13 @@ const renderTask = (taskListElement, task) => {
 
 const renderBoard = () => {
   const boardElement = new BoardComponent().getElement();
+  render(mainElement, boardElement);
+
+  if (checkIfAllTasksArchived(tasks)) {
+    render(boardElement, new NoTasksMessageComponent().getElement());
+    return;
+  }
+
   const taskListElement = new TaskListComponent().getElement();
 
   render(boardElement, new SortComponent().getElement());
@@ -56,8 +81,6 @@ const renderBoard = () => {
 
   let currentTaskAmount = TASK_START_AMOUNT;
   tasks.slice(0, currentTaskAmount).forEach((task) => renderTask(taskListElement, task));
-
-  render(mainElement, boardElement);
 
   if (currentTaskAmount >= TASK_TOTAL_AMOUNT) {
     return;
