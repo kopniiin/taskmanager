@@ -1,15 +1,8 @@
-import {
-  RenderPosition,
-  TASK_TOTAL_AMOUNT,
-  TASK_START_AMOUNT,
-  TASK_LOAD_AMOUNT
-} from "./const";
+import {TASK_TOTAL_AMOUNT, TASK_START_AMOUNT, TASK_LOAD_AMOUNT} from "./const";
 
-import {
-  checkIfAllTasksArchived,
-  render,
-  checkEscKey
-} from "./utils";
+import {render, replace, remove} from "./utils/dom";
+import {checkEscKey} from "./utils/keyboard";
+import {checkIfAllTasksArchived} from "./utils/task";
 
 import MenuComponent from "./components/menu";
 import FilterComponent from "./components/filter";
@@ -30,54 +23,53 @@ const filters = generateFilters(tasks);
 const mainElement = document.querySelector(`.main`);
 const headerElement = mainElement.querySelector(`.main__control`);
 
-render(headerElement, new MenuComponent().getElement());
-render(mainElement, new FilterComponent(filters).getElement());
+render(headerElement, new MenuComponent());
+render(mainElement, new FilterComponent(filters));
 
 const renderTask = (taskListElement, task) => {
-  const taskElement = new TaskComponent(task).getElement();
-  const editorElement = new EditorComponent(task).getElement();
+  const taskComponent = new TaskComponent(task);
+  const editorComponent = new EditorComponent(task);
 
-  const editButton = taskElement.querySelector(`.card__btn--edit`);
-  const editForm = editorElement.querySelector(`form`);
-
-  const editFormKeydownHandler = (evt) => {
+  const editorKeydownHandler = (evt) => {
     if (checkEscKey(evt.key)) {
       evt.preventDefault();
-      editorElement.replaceWith(taskElement);
-      document.removeEventListener(`keydown`, editFormKeydownHandler);
+      replace(editorComponent, taskComponent);
+      document.removeEventListener(`keydown`, editorKeydownHandler);
     }
   };
 
   const editButtonClickHandler = () => {
-    taskElement.replaceWith(editorElement);
-    document.addEventListener(`keydown`, editFormKeydownHandler);
+    replace(taskComponent, editorComponent);
+    document.addEventListener(`keydown`, editorKeydownHandler);
   };
 
-  const editFormSubmitHandler = (evt) => {
+  const editorSubmitHandler = (evt) => {
     evt.preventDefault();
-    editorElement.replaceWith(taskElement);
-    document.removeEventListener(`keydown`, editFormKeydownHandler);
+    replace(editorComponent, taskComponent);
+    document.removeEventListener(`keydown`, editorKeydownHandler);
   };
 
-  editButton.addEventListener(`click`, editButtonClickHandler);
-  editForm.addEventListener(`submit`, editFormSubmitHandler);
+  taskComponent.setEditButtonClickHandler(editButtonClickHandler);
+  editorComponent.setSubmitHandler(editorSubmitHandler);
 
-  render(taskListElement, taskElement, RenderPosition.BEFOREEND);
+  render(taskListElement, taskComponent);
 };
 
 const renderBoard = () => {
-  const boardElement = new BoardComponent().getElement();
-  render(mainElement, boardElement);
+  const boardComponent = new BoardComponent();
+  const boardElement = boardComponent.getElement();
+  render(mainElement, boardComponent);
 
   if (checkIfAllTasksArchived(tasks)) {
-    render(boardElement, new NoTasksMessageComponent().getElement());
+    render(boardElement, new NoTasksMessageComponent());
     return;
   }
 
-  const taskListElement = new TaskListComponent().getElement();
+  const taskListComponent = new TaskListComponent();
+  const taskListElement = taskListComponent.getElement();
 
-  render(boardElement, new SortComponent().getElement());
-  render(boardElement, taskListElement);
+  render(boardElement, new SortComponent());
+  render(boardElement, taskListComponent);
 
   let currentTaskAmount = TASK_START_AMOUNT;
   tasks.slice(0, currentTaskAmount).forEach((task) => renderTask(taskListElement, task));
@@ -87,7 +79,6 @@ const renderBoard = () => {
   }
 
   const loadButtonComponent = new LoadButtonComponent();
-  const loadButtonElement = loadButtonComponent.getElement();
 
   const loadTasks = () => {
     const previousTaskAmount = currentTaskAmount;
@@ -100,13 +91,12 @@ const renderBoard = () => {
     loadTasks();
 
     if (currentTaskAmount >= TASK_TOTAL_AMOUNT) {
-      loadButtonElement.remove();
-      loadButtonComponent.removeElement();
+      remove(loadButtonComponent);
     }
   };
 
-  loadButtonElement.addEventListener(`click`, loadButtonClickHandler);
-  render(boardElement, loadButtonElement);
+  loadButtonComponent.setClickHandler(loadButtonClickHandler);
+  render(boardElement, loadButtonComponent);
 };
 
 renderBoard();

@@ -6,11 +6,7 @@ import {
   TASK_COLORS
 } from "../const";
 
-import {
-  getRandomBoolean,
-  getRandomInteger,
-  getRandomElement
-} from "../utils";
+import {getRandomBoolean, getRandomInteger, getRandomElement} from "../utils/common";
 
 const generateDeadline = () => {
   const deadline = new Date();

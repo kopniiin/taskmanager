@@ -5,12 +5,8 @@ import {
   TASK_DEFAULT_COLOR
 } from "../const";
 
-import {
-  formatDate,
-  formatTime,
-  checkIfTaskExpired,
-  checkIfTaskRepeating
-} from "../utils";
+import {formatDate, formatTime} from "../utils/date";
+import {checkIfTaskExpired, checkIfTaskRepeating} from "../utils/task";
 
 import AbstractComponent from "./abstract-component";
 
@@ -151,5 +147,9 @@ export default class Editor extends AbstractComponent {
 
   getTemplate() {
     return createEditorTemplate(this._task);
+  }
+
+  setSubmitHandler(handler) {
+    this.getElement().querySelector(`form`).addEventListener(`submit`, handler);
   }
 }
