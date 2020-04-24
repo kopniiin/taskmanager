@@ -1,4 +1,4 @@
-import {createElementFromTemplate} from "../utils";
+import AbstractComponent from "./abstract-component";
 
 const createLoadButtonTemplate = () => (
   `<button
@@ -8,24 +8,8 @@ const createLoadButtonTemplate = () => (
   </button>`
 );
 
-export default class LoadButton {
-  constructor() {
-    this._element = null;
-  }
-
+export default class LoadButton extends AbstractComponent {
   getTemplate() {
     return createLoadButtonTemplate();
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElementFromTemplate(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

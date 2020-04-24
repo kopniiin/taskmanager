@@ -2,9 +2,10 @@ import {
   formatDate,
   formatTime,
   checkIfTaskExpired,
-  checkIfTaskRepeating,
-  createElementFromTemplate
+  checkIfTaskRepeating
 } from "../utils";
+
+import AbstractComponent from "./abstract-component";
 
 const createTaskTemplate = (task) => {
   const {description, dueDate, color, isFavorite, isArchive} = task;
@@ -65,25 +66,13 @@ const createTaskTemplate = (task) => {
   );
 };
 
-export default class Task {
+export default class Task extends AbstractComponent {
   constructor(task) {
+    super();
     this._task = task;
-    this._element = null;
   }
 
   getTemplate() {
     return createTaskTemplate(this._task);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElementFromTemplate(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }
