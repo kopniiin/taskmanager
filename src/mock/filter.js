@@ -1,10 +1,6 @@
 import {FILTERS} from "../const";
 
-import {
-  checkIfTaskExpired,
-  checkIfTaskExpiresToday,
-  checkIfTaskRepeating
-} from "../utils";
+import {checkIfTaskExpired, checkIfTaskExpiresToday, checkIfTaskRepeating} from "../utils/task";
 
 const countTasks = (tasks) => {
   const counters = {};

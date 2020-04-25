@@ -1,4 +1,4 @@
-import {createElementFromTemplate} from "../utils";
+import AbstractComponent from "./abstract-component";
 
 const createMessageTemplate = () => (
   `<p class="board__no-tasks">
@@ -6,24 +6,8 @@ const createMessageTemplate = () => (
   </p>`
 );
 
-export default class NoTasksMessage {
-  constructor() {
-    this._element = null;
-  }
-
+export default class NoTasksMessage extends AbstractComponent {
   getTemplate() {
     return createMessageTemplate();
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElementFromTemplate(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

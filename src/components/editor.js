@@ -5,13 +5,10 @@ import {
   TASK_DEFAULT_COLOR
 } from "../const";
 
-import {
-  formatDate,
-  formatTime,
-  checkIfTaskExpired,
-  checkIfTaskRepeating,
-  createElementFromTemplate
-} from "../utils";
+import {formatDate, formatTime} from "../utils/date";
+import {checkIfTaskExpired, checkIfTaskRepeating} from "../utils/task";
+
+import AbstractComponent from "./abstract-component";
 
 const createColorMarkup = (color, isChecked) => (
   `<input
@@ -142,25 +139,17 @@ const createEditorTemplate = (task) => {
   );
 };
 
-export default class Editor {
+export default class Editor extends AbstractComponent {
   constructor(task) {
+    super();
     this._task = task;
-    this._element = null;
   }
 
   getTemplate() {
     return createEditorTemplate(this._task);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElementFromTemplate(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
+  setSubmitHandler(handler) {
+    this.getElement().querySelector(`form`).addEventListener(`submit`, handler);
   }
 }
