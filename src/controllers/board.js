@@ -1,8 +1,8 @@
-import {TASK_TOTAL_AMOUNT, TASK_START_AMOUNT, TASK_LOAD_AMOUNT} from "../const";
+import {TASK_START_AMOUNT, TASK_LOAD_AMOUNT} from "../const";
 
 import {render, replace, remove} from "../utils/dom";
 import {checkEscKey} from "../utils/keyboard";
-import {checkIfAllTasksArchived} from "../utils/task";
+import {checkIfAllTasksArchived, sortTasks} from "../utils/task";
 
 import NoTasksMessageComponent from "../components/no-tasks-message";
 import SortComponent from "../components/sort";
@@ -11,7 +11,7 @@ import LoadButtonComponent from "../components/load-button";
 import TaskComponent from "../components/task";
 import EditorComponent from "../components/editor";
 
-const renderTask = (taskListElement, task) => {
+const renderTask = (taskListComponent, task) => {
   const taskComponent = new TaskComponent(task);
   const editorComponent = new EditorComponent(task);
 
@@ -37,8 +37,10 @@ const renderTask = (taskListElement, task) => {
   taskComponent.setEditButtonClickHandler(editButtonClickHandler);
   editorComponent.setSubmitHandler(editorSubmitHandler);
 
-  render(taskListElement, taskComponent);
+  render(taskListComponent, taskComponent);
 };
+
+const renderTasks = (taskListComponent, tasks) => tasks.forEach((task) => renderTask(taskListComponent, task));
 
 export default class BoardController {
   constructor(boardComponent) {
@@ -51,38 +53,53 @@ export default class BoardController {
   }
 
   render(tasks) {
-    const boardElement = this._boardComponent.getElement();
-
     if (checkIfAllTasksArchived(tasks)) {
-      render(boardElement, this._noTasksMessageComponent);
+      render(this._boardComponent, this._noTasksMessageComponent);
       return;
     }
 
-    render(boardElement, this._sortComponent);
-    render(boardElement, this._taskListComponent);
-    render(boardElement, this._loadButtonComponent);
+    render(this._boardComponent, this._sortComponent);
+    render(this._boardComponent, this._taskListComponent);
 
-    const taskListElement = this._taskListComponent.getElement();
-
+    let sortedTasks = [...tasks];
     let currentTaskAmount = TASK_START_AMOUNT;
 
     const loadTasks = () => {
       const previousTaskAmount = currentTaskAmount;
       currentTaskAmount += TASK_LOAD_AMOUNT;
-
-      tasks.slice(previousTaskAmount, currentTaskAmount).forEach((task) => renderTask(taskListElement, task));
+      renderTasks(this._taskListComponent, sortedTasks.slice(previousTaskAmount, currentTaskAmount));
     };
 
     const loadButtonClickHandler = () => {
       loadTasks();
 
-      if (currentTaskAmount >= TASK_TOTAL_AMOUNT) {
+      if (currentTaskAmount >= tasks.length) {
         remove(this._loadButtonComponent);
       }
     };
 
-    this._loadButtonComponent.setClickHandler(loadButtonClickHandler);
+    const rerenderLoadButton = () => {
+      if (currentTaskAmount >= tasks.length) {
+        return;
+      }
 
-    tasks.slice(0, currentTaskAmount).forEach((task) => renderTask(taskListElement, task));
+      remove(this._loadButtonComponent);
+      this._loadButtonComponent.setClickHandler(loadButtonClickHandler);
+      render(this._boardComponent, this._loadButtonComponent);
+    };
+
+    const sortTypeChangeHandler = (sortType) => {
+      this._taskListComponent.clear();
+
+      sortedTasks = sortTasks(tasks, sortType);
+      currentTaskAmount = TASK_START_AMOUNT;
+      renderTasks(this._taskListComponent, sortedTasks.slice(0, currentTaskAmount));
+      rerenderLoadButton();
+    };
+
+    renderTasks(this._taskListComponent, sortedTasks.slice(0, currentTaskAmount));
+    rerenderLoadButton();
+
+    this._sortComponent.setTypeChangeHandler(sortTypeChangeHandler);
   }
 }

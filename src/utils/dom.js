@@ -1,5 +1,7 @@
 import {RenderPosition} from "../const";
 
+import AbstractComponent from "../components/abstract-component";
+
 export const createElementFromTemplate = (template) => {
   const element = document.createElement(`div`);
   element.innerHTML = template;
@@ -7,13 +9,16 @@ export const createElementFromTemplate = (template) => {
   return element.firstChild;
 };
 
-export const render = (container, component, position = RenderPosition.BEFOREEND) => {
+export const render = (parent, child, position = RenderPosition.BEFOREEND) => {
+  const parentElement = parent instanceof AbstractComponent ? parent.getElement() : parent;
+  const childElement = child instanceof AbstractComponent ? child.getElement() : child;
+
   switch (position) {
     case RenderPosition.AFTERBEGIN:
-      container.prepend(component.getElement());
+      parentElement.prepend(childElement);
       break;
     case RenderPosition.BEFOREEND:
-      container.append(component.getElement());
+      parentElement.append(childElement);
       break;
   }
 };
