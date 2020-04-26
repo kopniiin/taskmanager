@@ -26,6 +26,12 @@ export const FILTERS = [`all`, `overdue`, `today`, `favorites`, `repeating`, `ar
 
 export const DEFAULT_FILTER = `all`;
 
+export const SortType = {
+  DEFAULT: `default`,
+  DATE_UP: `date-up`,
+  DATE_DOWN: `date-down`
+};
+
 export const TASK_TOTAL_AMOUNT = 20;
 
 export const TASK_START_AMOUNT = 8;
