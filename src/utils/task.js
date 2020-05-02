@@ -1,5 +1,7 @@
 import {SortType} from "../const";
 
+import {checkIfSomeElementsTruthy} from "./common";
+
 export const checkIfTaskExpired = (task) => {
   const deadline = task.dueDate;
   return deadline instanceof Date && deadline < Date.now();
@@ -14,7 +16,7 @@ export const checkIfTaskExpiresToday = (task) => {
     deadline.getDate() === today.getDate();
 };
 
-export const checkIfTaskRepeating = (task) => Object.values(task.repeatingDays).some(Boolean);
+export const checkIfTaskRepeating = (task) => checkIfSomeElementsTruthy(Object.values(task.repeatingDays));
 
 export const checkIfAllTasksArchived = (tasks) => tasks.every((task) => task.isArchive);
 

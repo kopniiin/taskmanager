@@ -23,8 +23,11 @@ export const render = (parent, child, position = RenderPosition.BEFOREEND) => {
   }
 };
 
-export const replace = (oldComponent, newComponent) => {
-  oldComponent.getElement().replaceWith(newComponent.getElement());
+export const replace = (replaced, replacer) => {
+  const oldElement = replaced instanceof AbstractComponent ? replaced.getElement() : replaced;
+  const newElement = replacer instanceof AbstractComponent ? replacer.getElement() : replacer;
+
+  oldElement.replaceWith(newElement);
 };
 
 export const remove = (component) => {
