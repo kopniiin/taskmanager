@@ -1,105 +1,109 @@
 import {TASK_START_AMOUNT, TASK_LOAD_AMOUNT} from "../const";
 
-import {render, replace, remove} from "../utils/dom";
-import {checkEscKey} from "../utils/keyboard";
+import {replaceElements} from "../utils/common";
+import {render, remove} from "../utils/dom";
 import {checkIfAllTasksArchived, sortTasks} from "../utils/task";
 
 import NoTasksMessageComponent from "../components/no-tasks-message";
 import SortComponent from "../components/sort";
 import TaskListComponent from "../components/task-list";
 import LoadButtonComponent from "../components/load-button";
-import TaskComponent from "../components/task";
-import EditorComponent from "../components/editor";
 
-const renderTask = (taskListComponent, task) => {
-  const taskComponent = new TaskComponent(task);
-  const editorComponent = new EditorComponent(task);
-
-  const editorKeydownHandler = (evt) => {
-    if (checkEscKey(evt.key)) {
-      evt.preventDefault();
-      replace(editorComponent, taskComponent);
-      document.removeEventListener(`keydown`, editorKeydownHandler);
-    }
-  };
-
-  const editButtonClickHandler = () => {
-    replace(taskComponent, editorComponent);
-    document.addEventListener(`keydown`, editorKeydownHandler);
-  };
-
-  const editorSubmitHandler = (evt) => {
-    evt.preventDefault();
-    replace(editorComponent, taskComponent);
-    document.removeEventListener(`keydown`, editorKeydownHandler);
-  };
-
-  taskComponent.setEditButtonClickHandler(editButtonClickHandler);
-  editorComponent.setSubmitHandler(editorSubmitHandler);
-
-  render(taskListComponent, taskComponent);
-};
-
-const renderTasks = (taskListComponent, tasks) => tasks.forEach((task) => renderTask(taskListComponent, task));
+import TaskController from "./task";
 
 export default class BoardController {
-  constructor(boardComponent) {
-    this._boardComponent = boardComponent;
+  constructor(container) {
+    this._container = container;
+
+    this._tasks = null;
+    this._sortedTasks = null;
+    this._taskControllers = null;
+    this._currentTaskAmount = TASK_START_AMOUNT;
 
     this._noTasksMessageComponent = new NoTasksMessageComponent();
     this._sortComponent = new SortComponent();
     this._taskListComponent = new TaskListComponent();
     this._loadButtonComponent = new LoadButtonComponent();
+
+    this._loadButtonClickHandler = this._loadButtonClickHandler.bind(this);
+    this._dataChangeHandler = this._dataChangeHandler.bind(this);
+    this._viewChangeHandler = this._viewChangeHandler.bind(this);
+    this._sortTypeChangeHandler = this._sortTypeChangeHandler.bind(this);
+    this._sortComponent.setTypeChangeHandler(this._sortTypeChangeHandler);
   }
 
   render(tasks) {
-    if (checkIfAllTasksArchived(tasks)) {
-      render(this._boardComponent, this._noTasksMessageComponent);
+    this._tasks = tasks;
+
+    if (checkIfAllTasksArchived(this._tasks)) {
+      render(this._container, this._noTasksMessageComponent);
       return;
     }
 
-    render(this._boardComponent, this._sortComponent);
-    render(this._boardComponent, this._taskListComponent);
+    render(this._container, this._sortComponent);
+    render(this._container, this._taskListComponent);
 
-    let sortedTasks = [...tasks];
-    let currentTaskAmount = TASK_START_AMOUNT;
+    this._sortedTasks = sortTasks(this._tasks, this._sortComponent.getType());
+    this._taskControllers = this._createTaskControllers(this._sortedTasks.slice(0, this._currentTaskAmount));
 
-    const loadTasks = () => {
-      const previousTaskAmount = currentTaskAmount;
-      currentTaskAmount += TASK_LOAD_AMOUNT;
-      renderTasks(this._taskListComponent, sortedTasks.slice(previousTaskAmount, currentTaskAmount));
-    };
+    this._rerenderLoadButton();
+  }
 
-    const loadButtonClickHandler = () => {
-      loadTasks();
+  _createTaskControllers(tasks) {
+    return tasks.map((task) => {
+      const taskController = new TaskController(
+          task,
+          this._taskListComponent,
+          this._dataChangeHandler,
+          this._viewChangeHandler
+      );
+      taskController.render();
+      return taskController;
+    });
+  }
 
-      if (currentTaskAmount >= tasks.length) {
-        remove(this._loadButtonComponent);
-      }
-    };
+  _loadTasks() {
+    const previousTaskAmount = this._currentTaskAmount;
+    this._currentTaskAmount += TASK_LOAD_AMOUNT;
+    this._taskControllers = this._taskControllers.concat(
+        this._createTaskControllers(this._sortedTasks.slice(previousTaskAmount, this._currentTaskAmount))
+    );
+  }
 
-    const rerenderLoadButton = () => {
-      if (currentTaskAmount >= tasks.length) {
-        return;
-      }
+  _loadButtonClickHandler() {
+    this._loadTasks();
 
+    if (this._currentTaskAmount >= this._tasks.length) {
       remove(this._loadButtonComponent);
-      this._loadButtonComponent.setClickHandler(loadButtonClickHandler);
-      render(this._boardComponent, this._loadButtonComponent);
-    };
+    }
+  }
 
-    const sortTypeChangeHandler = (sortType) => {
-      this._taskListComponent.clear();
+  _rerenderLoadButton() {
+    if (this._currentTaskAmount >= this._tasks.length) {
+      return;
+    }
 
-      sortedTasks = sortTasks(tasks, sortType);
-      currentTaskAmount = TASK_START_AMOUNT;
-      renderTasks(this._taskListComponent, sortedTasks.slice(0, currentTaskAmount));
-      rerenderLoadButton();
-    };
+    remove(this._loadButtonComponent);
+    this._loadButtonComponent.setClickHandler(this._loadButtonClickHandler);
+    render(this._container, this._loadButtonComponent);
+  }
 
-    renderTasks(this._taskListComponent, sortedTasks.slice(0, currentTaskAmount));
-    rerenderLoadButton();
+  _sortTypeChangeHandler(sortType) {
+    this._taskListComponent.clear();
 
-    this._sortComponent.setTypeChangeHandler(sortTypeChangeHandler);
+    this._sortedTasks = sortTasks(this._tasks, sortType);
+    this._currentTaskAmount = TASK_START_AMOUNT;
+    this._taskControllers = this._createTaskControllers(this._sortedTasks.slice(0, this._currentTaskAmount));
+
+    this._rerenderLoadButton();
+  }
+
+  _dataChangeHandler(oldTask, newTask) {
+    replaceElements(this._tasks, oldTask, newTask);
+    replaceElements(this._sortedTasks, oldTask, newTask);
+  }
+
+  _viewChangeHandler() {
+    this._taskControllers.forEach((taskController) => taskController.setDefaultView());
   }
 }

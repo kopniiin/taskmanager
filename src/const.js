@@ -55,3 +55,8 @@ DAYS.forEach((day) => {
 export const TASK_COLORS = [`black`, `yellow`, `blue`, `green`, `pink`];
 
 export const TASK_DEFAULT_COLOR = `black`;
+
+export const TaskViewMode = {
+  DEFAULT: `default`,
+  EDITOR: `editor`
+};
