@@ -1,14 +1,10 @@
-import {
-  DAYS,
-  TASK_DEFAULT_REPEATING_DAYS,
-  TASK_COLORS,
-  TASK_DEFAULT_COLOR
-} from "../const";
+import {DAYS, TASK_COLORS} from "../const";
 
+import {checkIfSomeElementsTruthy} from "../utils/common";
 import {formatDate, formatTime} from "../utils/date";
 import {checkIfTaskExpired, checkIfTaskRepeating} from "../utils/task";
 
-import AbstractComponent from "./abstract-component";
+import AbstractSmartComponent from "./abstract-smart-component";
 
 const createColorMarkup = (color, isChecked) => (
   `<input
@@ -67,21 +63,18 @@ const createDeadlineMarkup = (deadline) => (
         type="text"
         placeholder=""
         name="date"
-        value="${formatDate(deadline)} ${formatTime(deadline)}"/>
+        value="${deadline ? `${formatDate(deadline)} ${formatTime(deadline)}` : ``}"/>
     </label>
   </fieldset>`
 );
 
-const createEditorTemplate = (task) => {
-  const {
-    description,
-    dueDate,
-    repeatingDays = TASK_DEFAULT_REPEATING_DAYS,
-    color = TASK_DEFAULT_COLOR
-  } = task;
+const createEditorTemplate = (task, parameters) => {
+  const {description, dueDate, color} = task;
+  const {hasDeadline, isRepeating, repeatingDays} = parameters;
 
   const isExpired = checkIfTaskExpired(task);
-  const isRepeating = checkIfTaskRepeating(task);
+  const isSubmitButtonDisabled = (hasDeadline && isRepeating) ||
+    (isRepeating && !checkIfSomeElementsTruthy(Object.values(repeatingDays)));
 
   return (
     `<article
@@ -110,10 +103,10 @@ const createEditorTemplate = (task) => {
               <div class="card__dates">
 
                 <button class="card__date-deadline-toggle" type="button">
-                  date: <span class="card__date-status">${isRepeating ? `no` : `yes`}</span>
+                  date: <span class="card__date-status">${hasDeadline ? `yes` : `no`}</span>
                 </button>
 
-                ${isRepeating ? `` : createDeadlineMarkup(dueDate)}
+                ${hasDeadline ? createDeadlineMarkup(dueDate) : ``}
 
                 <button class="card__repeat-toggle" type="button">
                   repeat:<span class="card__repeat-status">${isRepeating ? `yes` : `no`}</span>
@@ -129,7 +122,13 @@ const createEditorTemplate = (task) => {
           </div>
 
           <div class="card__status-btns">
-            <button class="card__save" type="submit">save</button>
+            <button
+              class="card__save"
+              type="submit"
+              ${isSubmitButtonDisabled ? `disabled` : ``}>
+              save
+            </button>
+
             <button class="card__delete" type="button">delete</button>
           </div>
 
@@ -139,17 +138,73 @@ const createEditorTemplate = (task) => {
   );
 };
 
-export default class Editor extends AbstractComponent {
+export default class Editor extends AbstractSmartComponent {
   constructor(task) {
     super();
+
     this._task = task;
+
+    this._hasDeadline = Boolean(this._task.dueDate);
+    this._isRepeating = checkIfTaskRepeating(this._task);
+    this._repeatingDays = Object.assign({}, this._task.repeatingDays);
+
+    this._submitHandler = null;
+    this._deadlineToggleClickHandler = this._deadlineToggleClickHandler.bind(this);
+    this._repeatToggleClickHandler = this._repeatToggleClickHandler.bind(this);
+    this._repeatingDaysChangeHandler = this._repeatingDaysChangeHandler.bind(this);
+
+    this._recoveryHandlers();
   }
 
   getTemplate() {
-    return createEditorTemplate(this._task);
+    return createEditorTemplate(this._task, {
+      hasDeadline: this._hasDeadline,
+      isRepeating: this._isRepeating,
+      repeatingDays: this._repeatingDays
+    });
+  }
+
+  reset() {
+    this._hasDeadline = Boolean(this._task.dueDate);
+    this._isRepeating = checkIfTaskRepeating(this._task);
+    this._repeatingDays = Object.assign({}, this._task.repeatingDays);
+
+    this.rerender();
   }
 
   setSubmitHandler(handler) {
-    this.getElement().querySelector(`form`).addEventListener(`submit`, handler);
+    this._submitHandler = handler;
+    this.getElement().querySelector(`form`).addEventListener(`submit`, this._submitHandler);
+  }
+
+  _deadlineToggleClickHandler() {
+    this._hasDeadline = !this._hasDeadline;
+    this.rerender();
+  }
+
+  _repeatToggleClickHandler() {
+    this._isRepeating = !this._isRepeating;
+    this.rerender();
+  }
+
+  _repeatingDaysChangeHandler(evt) {
+    this._repeatingDays[evt.target.value] = evt.target.checked;
+    this.rerender();
+  }
+
+  _recoveryHandlers() {
+    if (this._submitHandler) {
+      this.setSubmitHandler(this._submitHandler);
+    }
+
+    const element = this.getElement();
+    const repeatingDaysElement = element.querySelector(`.card__repeat-days`);
+
+    element.querySelector(`.card__date-deadline-toggle`).addEventListener(`click`, this._deadlineToggleClickHandler);
+    element.querySelector(`.card__repeat-toggle`).addEventListener(`click`, this._repeatToggleClickHandler);
+
+    if (repeatingDaysElement) {
+      repeatingDaysElement.addEventListener(`change`, this._repeatingDaysChangeHandler);
+    }
   }
 }

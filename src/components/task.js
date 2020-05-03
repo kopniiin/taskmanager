@@ -23,12 +23,12 @@ const createTaskTemplate = (task) => {
             </button>
             <button
               type="button"
-              class="card__btn card__btn--archive ${isArchive ? `` : `card__btn--disabled`}">
+              class="card__btn card__btn--archive ${isArchive ? `card__btn--disabled` : ``}">
               archive
             </button>
             <button
               type="button"
-              class="card__btn card__btn--favorites ${isFavorite ? `` : `card__btn--disabled`}">
+              class="card__btn card__btn--favorites ${isFavorite ? `card__btn--disabled` : ``}">
               favorites
             </button>
           </div>
@@ -74,5 +74,13 @@ export default class Task extends AbstractComponent {
 
   setEditButtonClickHandler(handler) {
     this.getElement().querySelector(`.card__btn--edit`).addEventListener(`click`, handler);
+  }
+
+  setArchiveButtonClickHandler(handler) {
+    this.getElement().querySelector(`.card__btn--archive`).addEventListener(`click`, handler);
+  }
+
+  setFavoritesButtonClickHandler(handler) {
+    this.getElement().querySelector(`.card__btn--favorites`).addEventListener(`click`, handler);
   }
 }

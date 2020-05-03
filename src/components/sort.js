@@ -39,6 +39,10 @@ export default class Sort extends AbstractComponent {
     return createSortTemplate();
   }
 
+  getType() {
+    return this._type;
+  }
+
   setTypeChangeHandler(handler) {
     this.getElement().addEventListener(`click`, (evt) => {
       if (!evt.target.classList.contains(`board__filter`)) {
