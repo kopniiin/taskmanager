@@ -1,3 +1,6 @@
+import flatpickr from "flatpickr";
+import "flatpickr/dist/flatpickr.min.css";
+
 import {DAYS, TASK_COLORS} from "../const";
 
 import {checkIfSomeElementsTruthy} from "../utils/common";
@@ -153,7 +156,10 @@ export default class Editor extends AbstractSmartComponent {
     this._repeatToggleClickHandler = this._repeatToggleClickHandler.bind(this);
     this._repeatingDaysChangeHandler = this._repeatingDaysChangeHandler.bind(this);
 
+    this._datePicker = null;
+
     this._recoveryHandlers();
+    this._createDatePicker();
   }
 
   getTemplate() {
@@ -162,6 +168,11 @@ export default class Editor extends AbstractSmartComponent {
       isRepeating: this._isRepeating,
       repeatingDays: this._repeatingDays
     });
+  }
+
+  rerender() {
+    super.rerender();
+    this._createDatePicker();
   }
 
   reset() {
@@ -206,5 +217,23 @@ export default class Editor extends AbstractSmartComponent {
     if (repeatingDaysElement) {
       repeatingDaysElement.addEventListener(`change`, this._repeatingDaysChangeHandler);
     }
+  }
+
+  _createDatePicker() {
+    if (this._datePicker) {
+      this._datePicker.destroy();
+      this._datePicker = null;
+    }
+
+    if (!this._hasDeadline) {
+      return;
+    }
+
+    const dateElement = this.getElement().querySelector(`.card__date`);
+    this._datePicker = flatpickr(dateElement, {
+      altInput: true,
+      allowInput: true,
+      defaultDate: this._task.dueDate || `today`
+    });
   }
 }
