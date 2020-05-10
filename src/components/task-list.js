@@ -6,8 +6,4 @@ export default class TaskList extends AbstractComponent {
   getTemplate() {
     return createTaskListTemplate();
   }
-
-  clear() {
-    this.getElement().innerHTML = ``;
-  }
 }

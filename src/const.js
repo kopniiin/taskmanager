@@ -17,6 +17,8 @@ export const SortType = {
   DATE_DOWN: `date-down`
 };
 
+export const DEFAULT_SORT_TYPE = SortType.DEFAULT;
+
 export const TASK_TOTAL_AMOUNT = 20;
 
 export const TASK_START_AMOUNT = 8;

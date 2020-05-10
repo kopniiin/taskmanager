@@ -1,6 +1,6 @@
 import {TaskViewMode} from "../const";
 
-import {render, replace} from "../utils/dom";
+import {render, replace, remove} from "../utils/dom";
 import {checkEscKey} from "../utils/keyboard";
 
 import TaskComponent from "../components/task";
@@ -43,6 +43,14 @@ export default class TaskController {
     } else {
       render(this._container, this._taskComponent);
     }
+  }
+
+  remove() {
+    remove(this._taskComponent);
+    remove(this._editorComponent);
+    this._taskComponent = null;
+    this._editorComponent = null;
+    document.removeEventListener(`keydown`, this._editorKeydownHandler);
   }
 
   setDefaultView() {

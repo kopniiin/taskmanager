@@ -1,5 +1,3 @@
-import {SortType} from "../const";
-
 import {checkIfSomeElementsTruthy} from "./common";
 
 export const checkIfTaskExpired = (task) => {
@@ -19,22 +17,3 @@ export const checkIfTaskExpiresToday = (task) => {
 export const checkIfTaskRepeating = (task) => checkIfSomeElementsTruthy(Object.values(task.repeatingDays));
 
 export const checkIfAllTasksArchived = (tasks) => tasks.every((task) => task.isArchive);
-
-export const sortTasks = (tasks, sortType) => {
-  const tasksCopy = [...tasks];
-  let sortedTasks;
-
-  switch (sortType) {
-    case SortType.DEFAULT:
-      sortedTasks = tasksCopy;
-      break;
-    case SortType.DATE_UP:
-      sortedTasks = tasksCopy.sort((a, b) => a.dueDate - b.dueDate);
-      break;
-    case SortType.DATE_DOWN:
-      sortedTasks = tasksCopy.sort((a, b) => b.dueDate - a.dueDate);
-      break;
-  }
-
-  return sortedTasks;
-};

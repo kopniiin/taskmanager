@@ -29,10 +29,11 @@ const generateRepeatingDays = () => {
   return repeatingDays;
 };
 
-const generateTask = () => {
+const generateTask = (id) => {
   const dueDate = getRandomBoolean() ? generateDeadline() : null;
 
   return {
+    id,
     description: getRandomElement(TASK_DESCRIPTIONS),
     dueDate,
     repeatingDays: dueDate ? TASK_DEFAULT_REPEATING_DAYS : generateRepeatingDays(),
@@ -42,4 +43,7 @@ const generateTask = () => {
   };
 };
 
-export const generateTasks = () => new Array(TASK_TOTAL_AMOUNT).fill(``).map(generateTask);
+export const generateTasks = () => {
+  let currentTaskAmount = 0;
+  return new Array(TASK_TOTAL_AMOUNT).fill(``).map(() => generateTask(++currentTaskAmount));
+};
