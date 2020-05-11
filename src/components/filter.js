@@ -1,29 +1,29 @@
-import {DEFAULT_FILTER} from "../const";
-
 import AbstractComponent from "./abstract-component";
 
-const createFilterMarkup = (filter, isChecked) => {
-  const {name, count} = filter;
+const createFilterMarkup = (filter) => {
+  const {name, counter, isChecked} = filter;
 
   return (
     `<input
-      type="radio"
-      id="filter__${name}"
       class="filter__input visually-hidden"
+      id="filter__${name}"
+      type="radio"
       name="filter"
-      ${isChecked ? `checked` : ``}/>
+      value="${name}"
+      ${isChecked ? `checked` : ``}
+      ${!counter ? `disabled` : ``}/>
 
     <label
-      for="filter__${name}"
-      class="filter__label">
-      ${name} <span class="filter__${name}-count">${count}</span>
+      class="filter__label"
+      for="filter__${name}">
+      ${name} <span class="filter__${name}-count">${counter}</span>
     </label>`
   );
 };
 
 const createFilterTemplate = (filters) => (
   `<section class="main__filter filter container">
-    ${filters.map((filter) => createFilterMarkup(filter, filter.name === DEFAULT_FILTER)).join(``)}
+    ${filters.map(createFilterMarkup).join(``)}
   </section>`
 );
 
@@ -35,5 +35,9 @@ export default class Filter extends AbstractComponent {
 
   getTemplate() {
     return createFilterTemplate(this._filters);
+  }
+
+  setTypeChangeHandler(handler) {
+    this.getElement().addEventListener(`change`, (evt) => handler(evt.target.value));
   }
 }

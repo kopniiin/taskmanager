@@ -1,4 +1,4 @@
-import {TASK_START_AMOUNT, TASK_LOAD_AMOUNT} from "../const";
+import {DEFAULT_SORT_TYPE, TASK_START_AMOUNT, TASK_LOAD_AMOUNT} from "../const";
 
 import {render, remove} from "../utils/dom";
 import {checkIfAllTasksArchived} from "../utils/task";
@@ -26,8 +26,10 @@ export default class BoardController {
     this._loadButtonClickHandler = this._loadButtonClickHandler.bind(this);
     this._dataChangeHandler = this._dataChangeHandler.bind(this);
     this._viewChangeHandler = this._viewChangeHandler.bind(this);
+    this._filterTypeChangeHandler = this._filterTypeChangeHandler.bind(this);
     this._sortTypeChangeHandler = this._sortTypeChangeHandler.bind(this);
 
+    this._tasksModel.setFilterTypeChangeHandler(this._filterTypeChangeHandler);
     this._sortComponent.setTypeChangeHandler(this._sortTypeChangeHandler);
   }
 
@@ -88,8 +90,15 @@ export default class BoardController {
     render(this._container, this._loadButtonComponent);
   }
 
+  _filterTypeChangeHandler() {
+    this._sortComponent.setDefaultType();
+    this._tasksModel.setSortType(DEFAULT_SORT_TYPE);
+    this._rerenderTasks();
+    this._rerenderLoadButton();
+  }
+
   _sortTypeChangeHandler(sortType) {
-    this._tasksModel.setSort(sortType);
+    this._tasksModel.setSortType(sortType);
     this._rerenderTasks();
     this._rerenderLoadButton();
   }

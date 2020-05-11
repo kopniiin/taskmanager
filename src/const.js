@@ -7,9 +7,16 @@ export const RenderPosition = {
 
 export const ESC_KEY = `Escape`;
 
-export const FILTERS = [`all`, `overdue`, `today`, `favorites`, `repeating`, `archive`];
+export const FilterType = {
+  ALL: `all`,
+  OVERDUE: `overdue`,
+  TODAY: `today`,
+  FAVORITES: `favorites`,
+  REPEATING: `repeating`,
+  ARCHIVE: `archive`
+};
 
-export const DEFAULT_FILTER = `all`;
+export const DEFAULT_FILTER_TYPE = FilterType.ALL;
 
 export const SortType = {
   DEFAULT: `default`,

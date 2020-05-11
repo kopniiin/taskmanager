@@ -1,18 +1,9 @@
 import {checkIfSomeElementsTruthy} from "./common";
+import {checkIfPast, checkIfToday} from "./date";
 
-export const checkIfTaskExpired = (task) => {
-  const deadline = task.dueDate;
-  return deadline instanceof Date && deadline < Date.now();
-};
+export const checkIfTaskExpired = (task) => task.dueDate instanceof Date && checkIfPast(task.dueDate);
 
-export const checkIfTaskExpiresToday = (task) => {
-  const deadline = task.dueDate;
-  const today = new Date();
-
-  return deadline instanceof Date &&
-    deadline.getMonth() === today.getMonth() &&
-    deadline.getDate() === today.getDate();
-};
+export const checkIfTaskExpiresToday = (task) => task.dueDate instanceof Date && checkIfToday(task.dueDate);
 
 export const checkIfTaskRepeating = (task) => checkIfSomeElementsTruthy(Object.values(task.repeatingDays));
 

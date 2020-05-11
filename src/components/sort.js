@@ -1,4 +1,4 @@
-import {SortType} from "../const";
+import {SortType, DEFAULT_SORT_TYPE} from "../const";
 
 import AbstractComponent from "./abstract-component";
 
@@ -32,15 +32,15 @@ const createSortTemplate = () => (
 export default class Sort extends AbstractComponent {
   constructor() {
     super();
-    this._type = SortType.DEFAULT;
+    this._type = DEFAULT_SORT_TYPE;
   }
 
   getTemplate() {
     return createSortTemplate();
   }
 
-  getType() {
-    return this._type;
+  setDefaultType() {
+    this._type = DEFAULT_SORT_TYPE;
   }
 
   setTypeChangeHandler(handler) {
