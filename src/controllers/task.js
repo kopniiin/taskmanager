@@ -20,6 +20,7 @@ export default class TaskController {
 
     this._editorKeydownHandler = this._editorKeydownHandler.bind(this);
     this._editorSubmitHandler = this._editorSubmitHandler.bind(this);
+    this._deleteButtonClickHandler = this._deleteButtonClickHandler.bind(this);
     this._editButtonClickHandler = this._editButtonClickHandler.bind(this);
     this._archiveButtonClickHandler = this._archiveButtonClickHandler.bind(this);
     this._favoritesButtonClickHandler = this._favoritesButtonClickHandler.bind(this);
@@ -36,6 +37,7 @@ export default class TaskController {
     this._taskComponent.setArchiveButtonClickHandler(this._archiveButtonClickHandler);
     this._taskComponent.setFavoritesButtonClickHandler(this._favoritesButtonClickHandler);
     this._editorComponent.setSubmitHandler(this._editorSubmitHandler);
+    this._editorComponent.setDeleteButtonClickHandler(this._deleteButtonClickHandler);
 
     if (oldTaskComponent) {
       replace(oldTaskComponent, this._taskComponent);
@@ -85,6 +87,10 @@ export default class TaskController {
     this._replaceEditorWithTask();
   }
 
+  _deleteButtonClickHandler() {
+    this._dataChangeHandler(this._task, null);
+  }
+
   _editButtonClickHandler() {
     this._replaceTaskWithEditor();
   }
@@ -93,7 +99,6 @@ export default class TaskController {
     const oldTask = this._task;
     this._task = Object.assign({}, oldTask, {[property]: !oldTask[property]});
     this._dataChangeHandler(oldTask, this._task);
-    this.render();
   }
 
   _archiveButtonClickHandler() {

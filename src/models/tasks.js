@@ -26,9 +26,20 @@ export default class Tasks {
     return this._tasks;
   }
 
+  addTask(task) {
+    this._tasks = [task, ...this._tasks];
+    this._callHandlers(this._dataChangeHandlers);
+  }
+
   updateTask(id, newTask) {
     const index = this._tasks.findIndex((task) => task.id === id);
     this._tasks = [...this._tasks.slice(0, index), newTask, ...this._tasks.slice(index + 1)];
+    this._callHandlers(this._dataChangeHandlers);
+  }
+
+  deleteTask(id) {
+    const index = this._tasks.findIndex((task) => task.id === id);
+    this._tasks = [...this._tasks.slice(0, index), ...this._tasks.slice(index + 1)];
     this._callHandlers(this._dataChangeHandlers);
   }
 

@@ -152,6 +152,7 @@ export default class Editor extends AbstractSmartComponent {
     this._repeatingDays = Object.assign({}, this._task.repeatingDays);
 
     this._submitHandler = null;
+    this._deleteButtonClickHandler = null;
     this._deadlineToggleClickHandler = this._deadlineToggleClickHandler.bind(this);
     this._repeatToggleClickHandler = this._repeatToggleClickHandler.bind(this);
     this._repeatingDaysChangeHandler = this._repeatingDaysChangeHandler.bind(this);
@@ -188,6 +189,11 @@ export default class Editor extends AbstractSmartComponent {
     this.getElement().querySelector(`form`).addEventListener(`submit`, this._submitHandler);
   }
 
+  setDeleteButtonClickHandler(handler) {
+    this._deleteButtonClickHandler = handler;
+    this.getElement().querySelector(`.card__delete`).addEventListener(`click`, this._deleteButtonClickHandler);
+  }
+
   _deadlineToggleClickHandler() {
     this._hasDeadline = !this._hasDeadline;
     this.rerender();
@@ -206,6 +212,10 @@ export default class Editor extends AbstractSmartComponent {
   _recoveryHandlers() {
     if (this._submitHandler) {
       this.setSubmitHandler(this._submitHandler);
+    }
+
+    if (this._deleteButtonClickHandler) {
+      this.setDeleteButtonClickHandler(this._deleteButtonClickHandler);
     }
 
     const element = this.getElement();
