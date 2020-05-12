@@ -1,4 +1,4 @@
-import {DEFAULT_SORT_TYPE, TASK_START_AMOUNT, TASK_LOAD_AMOUNT} from "../const";
+import {DEFAULT_SORT_TYPE, TASK_START_AMOUNT, TASK_LOAD_AMOUNT, EMPTY_TASK, TaskViewMode} from "../const";
 
 import {render, remove} from "../utils/dom";
 import {checkIfAllTasksArchived} from "../utils/task";
@@ -17,6 +17,7 @@ export default class BoardController {
 
     this._currentTaskAmount = TASK_START_AMOUNT;
     this._taskControllers = [];
+    this._taskCreator = null;
 
     this._noTasksMessageComponent = new NoTasksMessageComponent();
     this._sortComponent = new SortComponent();
@@ -43,6 +44,21 @@ export default class BoardController {
     render(this._container, this._taskListComponent);
     this._rerenderTasks();
     this._rerenderLoadButton();
+  }
+
+  createTask() {
+    if (this._taskCreator) {
+      return;
+    }
+
+    this._taskCreator = new TaskController(
+        EMPTY_TASK,
+        this._taskListComponent,
+        this._dataChangeHandler,
+        this._viewChangeHandler
+    );
+
+    this._taskCreator.render(TaskViewMode.CREATOR);
   }
 
   _createTaskControllers(tasks) {
@@ -104,10 +120,17 @@ export default class BoardController {
   }
 
   _dataChangeHandler(oldTask, newTask) {
-    if (newTask) {
+    if (oldTask && newTask) {
       this._tasksModel.updateTask(oldTask.id, newTask);
-    } else {
+    } else if (oldTask) {
       this._tasksModel.deleteTask(oldTask.id);
+    } else if (newTask) {
+      this._tasksModel.addTask(newTask);
+    }
+
+    if (this._taskCreator) {
+      this._taskCreator.remove();
+      this._taskCreator = null;
     }
 
     this._rerenderTasks(this._currentTaskAmount);
@@ -116,5 +139,10 @@ export default class BoardController {
 
   _viewChangeHandler() {
     this._taskControllers.forEach((taskController) => taskController.setDefaultView());
+
+    if (this._taskCreator) {
+      this._taskCreator.remove();
+      this._taskCreator = null;
+    }
   }
 }

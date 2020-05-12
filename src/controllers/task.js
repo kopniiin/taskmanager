@@ -1,4 +1,4 @@
-import {TaskViewMode} from "../const";
+import {RenderPosition, TaskViewMode} from "../const";
 
 import {render, replace, remove} from "../utils/dom";
 import {checkEscKey} from "../utils/keyboard";
@@ -26,24 +26,22 @@ export default class TaskController {
     this._favoritesButtonClickHandler = this._favoritesButtonClickHandler.bind(this);
   }
 
-  render() {
-    const oldTaskComponent = this._taskComponent;
-    const oldEditorComponent = this._editorComponent;
+  render(viewMode = TaskViewMode.DEFAULT) {
+    this._viewMode = viewMode;
 
     this._taskComponent = new TaskComponent(this._task);
     this._editorComponent = new EditorComponent(this._task);
 
-    this._taskComponent.setEditButtonClickHandler(this._editButtonClickHandler);
-    this._taskComponent.setArchiveButtonClickHandler(this._archiveButtonClickHandler);
-    this._taskComponent.setFavoritesButtonClickHandler(this._favoritesButtonClickHandler);
-    this._editorComponent.setSubmitHandler(this._editorSubmitHandler);
-    this._editorComponent.setDeleteButtonClickHandler(this._deleteButtonClickHandler);
+    this._setHandlers();
 
-    if (oldTaskComponent) {
-      replace(oldTaskComponent, this._taskComponent);
-      replace(oldEditorComponent, this._editorComponent);
-    } else {
-      render(this._container, this._taskComponent);
+    switch (this._viewMode) {
+      case TaskViewMode.DEFAULT:
+        render(this._container, this._taskComponent);
+        break;
+      case TaskViewMode.CREATOR:
+        render(this._container, this._editorComponent, RenderPosition.AFTERBEGIN);
+        document.addEventListener(`keydown`, this._editorKeydownHandler);
+        break;
     }
   }
 
@@ -56,9 +54,17 @@ export default class TaskController {
   }
 
   setDefaultView() {
-    if (this._viewMode === TaskViewMode.EDITOR) {
+    if (this._viewMode !== TaskViewMode.DEFAULT) {
       this._replaceEditorWithTask();
     }
+  }
+
+  _setHandlers() {
+    this._taskComponent.setEditButtonClickHandler(this._editButtonClickHandler);
+    this._taskComponent.setArchiveButtonClickHandler(this._archiveButtonClickHandler);
+    this._taskComponent.setFavoritesButtonClickHandler(this._favoritesButtonClickHandler);
+    this._editorComponent.setSubmitHandler(this._editorSubmitHandler);
+    this._editorComponent.setDeleteButtonClickHandler(this._deleteButtonClickHandler);
   }
 
   _replaceTaskWithEditor() {
@@ -78,17 +84,32 @@ export default class TaskController {
   _editorKeydownHandler(evt) {
     if (checkEscKey(evt.key)) {
       evt.preventDefault();
+
+      if (this._viewMode === TaskViewMode.CREATOR) {
+        this._dataChangeHandler(null, null);
+        return;
+      }
+
       this._replaceEditorWithTask();
     }
   }
 
   _editorSubmitHandler(evt) {
     evt.preventDefault();
-    this._replaceEditorWithTask();
+
+    if (this._viewMode === TaskViewMode.CREATOR) {
+      this._dataChangeHandler(null, this._editorComponent.getData());
+    } else {
+      this._dataChangeHandler(this._task, this._editorComponent.getData());
+    }
   }
 
   _deleteButtonClickHandler() {
-    this._dataChangeHandler(this._task, null);
+    if (this._viewMode === TaskViewMode.CREATOR) {
+      this._dataChangeHandler(null, null);
+    } else {
+      this._dataChangeHandler(this._task, null);
+    }
   }
 
   _editButtonClickHandler() {
@@ -96,9 +117,7 @@ export default class TaskController {
   }
 
   _toggleTaskProperty(property) {
-    const oldTask = this._task;
-    this._task = Object.assign({}, oldTask, {[property]: !oldTask[property]});
-    this._dataChangeHandler(oldTask, this._task);
+    this._dataChangeHandler(this._task, Object.assign({}, this._task, {[property]: !this._task[property]}));
   }
 
   _archiveButtonClickHandler() {

@@ -1,3 +1,5 @@
+import {MenuItem} from "../const";
+
 import AbstractComponent from "./abstract-component";
 
 const createMenuTemplate = () => (
@@ -6,6 +8,7 @@ const createMenuTemplate = () => (
     <input
       type="radio"
       name="control"
+      value="${MenuItem.NEW_TASK}"
       id="control__new-task"
       class="control__input visually-hidden"/>
 
@@ -18,6 +21,7 @@ const createMenuTemplate = () => (
     <input
       type="radio"
       name="control"
+      value="${MenuItem.TASKS}"
       id="control__task"
       class="control__input visually-hidden"
       checked/>
@@ -31,6 +35,7 @@ const createMenuTemplate = () => (
     <input
       type="radio"
       name="control"
+      value="${MenuItem.STATISTICS}"
       id="control__statistic"
       class="control__input visually-hidden"/>
 
@@ -46,5 +51,13 @@ const createMenuTemplate = () => (
 export default class Menu extends AbstractComponent {
   getTemplate() {
     return createMenuTemplate();
+  }
+
+  setItem(item) {
+    this.getElement().querySelector(`[value="${item}"]`).checked = true;
+  }
+
+  setItemChangeHandler(handler) {
+    this.getElement().addEventListener(`change`, (evt) => handler(evt.target.value));
   }
 }

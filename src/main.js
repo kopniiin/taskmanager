@@ -1,3 +1,5 @@
+import {MenuItem} from "./const";
+
 import {render} from "./utils/dom";
 
 import TasksModel from "./models/tasks";
@@ -23,5 +25,19 @@ const boardComponent = new BoardComponent();
 const boardController = new BoardController(boardComponent, tasksModel);
 boardController.render();
 
-render(headerElement, new MenuComponent());
+const menuComponent = new MenuComponent();
+
+const menuItemChangeHandler = (menuItem) => {
+  switch (menuItem) {
+    case MenuItem.NEW_TASK:
+      filterController.setDefaultType();
+      boardController.createTask();
+      menuComponent.setItem(MenuItem.TASKS);
+      break;
+  }
+};
+
+menuComponent.setItemChangeHandler(menuItemChangeHandler);
+
+render(headerElement, menuComponent);
 render(mainElement, boardComponent);

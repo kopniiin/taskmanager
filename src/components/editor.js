@@ -1,10 +1,9 @@
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 
-import {DAYS, TASK_COLORS} from "../const";
+import {DAYS, TaskDescriptionLengthLimit, TASK_DEFAULT_REPEATING_DAYS, TASK_COLORS} from "../const";
 
-import {checkIfSomeElementsTruthy} from "../utils/common";
-import {formatDate, formatTime} from "../utils/date";
+import {checkIfSomeElementsTruthy, checkIfElementInRange} from "../utils/common";
 import {checkIfTaskExpired, checkIfTaskRepeating} from "../utils/task";
 
 import AbstractSmartComponent from "./abstract-smart-component";
@@ -58,26 +57,26 @@ const createDaysMarkup = (repeatingDays) => (
   </fieldset>`
 );
 
-const createDeadlineMarkup = (deadline) => (
+const createDeadlineMarkup = () => (
   `<fieldset class="card__date-deadline">
     <label class="card__input-deadline-wrap">
       <input
         class="card__date"
         type="text"
         placeholder=""
-        name="date"
-        value="${deadline ? `${formatDate(deadline)} ${formatTime(deadline)}` : ``}"/>
+        name="date"/>
     </label>
   </fieldset>`
 );
 
 const createEditorTemplate = (task, parameters) => {
-  const {description, dueDate, color} = task;
-  const {hasDeadline, isRepeating, repeatingDays} = parameters;
+  const {color} = task;
+  const {description, hasDeadline, isRepeating, repeatingDays} = parameters;
 
   const isExpired = checkIfTaskExpired(task);
   const isSubmitButtonDisabled = (hasDeadline && isRepeating) ||
-    (isRepeating && !checkIfSomeElementsTruthy(Object.values(repeatingDays)));
+    (isRepeating && !checkIfSomeElementsTruthy(Object.values(repeatingDays))) ||
+    !checkIfElementInRange(description.length, TaskDescriptionLengthLimit);
 
   return (
     `<article
@@ -109,7 +108,7 @@ const createEditorTemplate = (task, parameters) => {
                   date: <span class="card__date-status">${hasDeadline ? `yes` : `no`}</span>
                 </button>
 
-                ${hasDeadline ? createDeadlineMarkup(dueDate) : ``}
+                ${hasDeadline ? createDeadlineMarkup() : ``}
 
                 <button class="card__repeat-toggle" type="button">
                   repeat:<span class="card__repeat-status">${isRepeating ? `yes` : `no`}</span>
@@ -141,18 +140,36 @@ const createEditorTemplate = (task, parameters) => {
   );
 };
 
+const parseFormData = (formData) => {
+  const date = formData.get(`date`);
+
+  const repeatingDays = formData.getAll(`repeat`).reduce((acc, repeatingDay) => {
+    acc[repeatingDay] = true;
+    return acc;
+  }, Object.assign({}, TASK_DEFAULT_REPEATING_DAYS));
+
+  return {
+    description: formData.get(`text`),
+    dueDate: date ? new Date(date) : null,
+    repeatingDays,
+    color: formData.get(`color`)
+  };
+};
+
 export default class Editor extends AbstractSmartComponent {
   constructor(task) {
     super();
 
     this._task = task;
 
+    this._description = this._task.description;
     this._hasDeadline = Boolean(this._task.dueDate);
     this._isRepeating = checkIfTaskRepeating(this._task);
     this._repeatingDays = Object.assign({}, this._task.repeatingDays);
 
     this._submitHandler = null;
     this._deleteButtonClickHandler = null;
+    this._descriptionInputHandler = this._descriptionInputHandler.bind(this);
     this._deadlineToggleClickHandler = this._deadlineToggleClickHandler.bind(this);
     this._repeatToggleClickHandler = this._repeatToggleClickHandler.bind(this);
     this._repeatingDaysChangeHandler = this._repeatingDaysChangeHandler.bind(this);
@@ -165,10 +182,20 @@ export default class Editor extends AbstractSmartComponent {
 
   getTemplate() {
     return createEditorTemplate(this._task, {
+      description: this._description,
       hasDeadline: this._hasDeadline,
       isRepeating: this._isRepeating,
       repeatingDays: this._repeatingDays
     });
+  }
+
+  removeElement() {
+    if (this._datePicker) {
+      this._datePicker.destroy();
+      this._datePicker = null;
+    }
+
+    super.removeElement();
   }
 
   rerender() {
@@ -177,11 +204,16 @@ export default class Editor extends AbstractSmartComponent {
   }
 
   reset() {
+    this._description = this._task.description;
     this._hasDeadline = Boolean(this._task.dueDate);
     this._isRepeating = checkIfTaskRepeating(this._task);
     this._repeatingDays = Object.assign({}, this._task.repeatingDays);
 
     this.rerender();
+  }
+
+  getData() {
+    return parseFormData(new FormData(this.getElement().querySelector(`form`)));
   }
 
   setSubmitHandler(handler) {
@@ -192,6 +224,13 @@ export default class Editor extends AbstractSmartComponent {
   setDeleteButtonClickHandler(handler) {
     this._deleteButtonClickHandler = handler;
     this.getElement().querySelector(`.card__delete`).addEventListener(`click`, this._deleteButtonClickHandler);
+  }
+
+  _descriptionInputHandler(evt) {
+    this._description = evt.target.value;
+    this.getElement().querySelector(`.card__save`).disabled = !checkIfElementInRange(
+        this._description.length, TaskDescriptionLengthLimit
+    );
   }
 
   _deadlineToggleClickHandler() {
@@ -221,6 +260,7 @@ export default class Editor extends AbstractSmartComponent {
     const element = this.getElement();
     const repeatingDaysElement = element.querySelector(`.card__repeat-days`);
 
+    element.querySelector(`.card__text`).addEventListener(`input`, this._descriptionInputHandler);
     element.querySelector(`.card__date-deadline-toggle`).addEventListener(`click`, this._deadlineToggleClickHandler);
     element.querySelector(`.card__repeat-toggle`).addEventListener(`click`, this._repeatToggleClickHandler);
 
@@ -241,9 +281,10 @@ export default class Editor extends AbstractSmartComponent {
 
     const dateElement = this.getElement().querySelector(`.card__date`);
     this._datePicker = flatpickr(dateElement, {
+      enableTime: true,
+      defaultDate: this._task.dueDate || new Date(),
       altInput: true,
-      allowInput: true,
-      defaultDate: this._task.dueDate || `today`
+      altFormat: `j F H:i`
     });
   }
 }

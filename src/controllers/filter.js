@@ -40,6 +40,11 @@ export default class FilterController {
     }
   }
 
+  setDefaultType() {
+    this._filterComponent.setDefaultType();
+    this._tasksModel.setFilterType(DEFAULT_FILTER_TYPE);
+  }
+
   _dataChangeHandler() {
     this.render();
   }

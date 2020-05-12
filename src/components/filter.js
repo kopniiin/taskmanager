@@ -1,3 +1,5 @@
+import {DEFAULT_FILTER_TYPE} from "../const";
+
 import AbstractComponent from "./abstract-component";
 
 const createFilterMarkup = (filter) => {
@@ -35,6 +37,10 @@ export default class Filter extends AbstractComponent {
 
   getTemplate() {
     return createFilterTemplate(this._filters);
+  }
+
+  setDefaultType() {
+    this.getElement().querySelector(`[value="${DEFAULT_FILTER_TYPE}"]`).checked = true;
   }
 
   setTypeChangeHandler(handler) {
