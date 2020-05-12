@@ -1,3 +1,5 @@
+import {encode} from "he";
+
 import {formatDate, formatTime} from "../utils/date";
 import {checkIfTaskExpired, checkIfTaskRepeating} from "../utils/task";
 
@@ -40,7 +42,7 @@ const createTaskTemplate = (task) => {
           </div>
 
           <div class="card__textarea-wrap">
-            <p class="card__text">${description}</p>
+            <p class="card__text">${encode(description)}</p>
           </div>
 
           <div class="card__settings">

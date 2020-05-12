@@ -1,5 +1,6 @@
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
+import {encode} from "he";
 
 import {DAYS, TaskDescriptionLengthLimit, TASK_DEFAULT_REPEATING_DAYS, TASK_COLORS} from "../const";
 
@@ -73,10 +74,12 @@ const createEditorTemplate = (task, parameters) => {
   const {color} = task;
   const {description, hasDeadline, isRepeating, repeatingDays} = parameters;
 
+  const encodedDescription = encode(description);
+
   const isExpired = checkIfTaskExpired(task);
   const isSubmitButtonDisabled = (hasDeadline && isRepeating) ||
     (isRepeating && !checkIfSomeElementsTruthy(Object.values(repeatingDays))) ||
-    !checkIfElementInRange(description.length, TaskDescriptionLengthLimit);
+    !checkIfElementInRange(encodedDescription.length, TaskDescriptionLengthLimit);
 
   return (
     `<article
@@ -95,7 +98,7 @@ const createEditorTemplate = (task, parameters) => {
               <textarea
                 class="card__text"
                 placeholder="Start typing your text here..."
-                name="text">${description}</textarea>
+                name="text">${encodedDescription}</textarea>
             </label>
           </div>
 
